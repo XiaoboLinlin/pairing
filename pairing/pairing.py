@@ -1,9 +1,17 @@
 from copy import deepcopy
-import itertools
 
 import numpy as np
 import mdtraj as md
 from pairing.utils.misc import make_comtrj
+
+
+__all__ = [
+    'calc_direct',
+    'calc_indirect',
+    'calc_reduc',
+    'check_pairs',
+    'analyze_clusters'
+]
 
 
 def calc_indirect(direct_array):
@@ -15,6 +23,7 @@ def calc_indirect(direct_array):
         indirect = _generate_indirect_connectivity(matrix)
         indirect_results.append(np.asarray(indirect))
     return(indirect_results)
+
 
 def calc_reduc(indirect_array):
     """
@@ -29,15 +38,15 @@ def calc_reduc(indirect_array):
 
 def check_pairs(trj, cutoff, first_direct):
     """
-    Checks pairs at various frames against direct correlation matrix 
+    Checks pairs at various frames against direct correlation matrix
     from frame zero
     """
     trj = make_comtrj(trj)
     direct_list = []
     for frame in trj:
-       c = deepcopy(first_direct)
-       matrix = _check_direct(c, frame, cutoff)
-       direct_list.append(matrix)
+        c = deepcopy(first_direct)
+        matrix = _check_direct(c, frame, cutoff)
+        direct_list.append(matrix)
 
     return direct_list
 
@@ -51,7 +60,7 @@ def calc_direct(trj, cutoff=1.0):
     for frame in com_trj:
         direct = _generate_direct_correlation(frame, cutoff)
         direct_list.append(direct)
-    
+
     return direct_list
 
 
@@ -94,8 +103,7 @@ def _check_direct(direct_corr, frame, cutoff):
     for row in range(len(direct_corr[0])):
         for col in range(len(direct_corr[0])):
             if direct_corr[row][col] == 1:
-                dist = md.compute_distances(frame,
-                        atom_pairs=[(row, col)])
+                dist = md.compute_distances(frame, atom_pairs=[(row, col)])
                 if dist < cutoff:
                     continue
                 else:
@@ -124,9 +132,9 @@ def _generate_indirect_connectivity(direct_corr):
             continue
         else:
             intersect = np.maximum.reduce(
-                    [c[:,ele] for ele in ones])
+                    [c[:, ele] for ele in ones])
             for ele in ones:
-                c[:,ele] = intersect
+                c[:, ele] = intersect
     indirect = c
 
     return indirect
